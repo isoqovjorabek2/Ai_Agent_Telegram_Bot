@@ -255,8 +255,4 @@ MIT License - feel free to use and modify as needed.
 
 For questions or issues:
 - Open a GitHub issue
-- Contact: your-email@example.com
-
----
-
-**Made with ❤️ for Uzbek and Russian speakers**
+- Contact: isoqovjorabek774@gmail.com
