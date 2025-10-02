@@ -1,114 +1,185 @@
-import os
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from google.auth.transport.requests import Request
-from db import get_user_tokens, save_user_tokens
-import json
+// Backend API URL
+const BACKEND_URL = 'http://localhost:8000';
 
-# OAuth 2.0 scopes
-SCOPES = [
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/keep'
-]
+// Get user_id from URL parameters
+function getUserId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('user_id');
+}
 
-CLIENT_CONFIG = {
-    "web": {
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris": [os.getenv("REDIRECT_URI", "http://localhost:3000/oauth/callback")]
+// Show status message
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${type}`;
+}
+
+// Show/hide spinner
+function toggleSpinner(show) {
+    const spinner = document.getElementById('spinner');
+    spinner.className = show ? 'spinner active' : 'spinner';
+}
+
+// Initiate Google OAuth flow
+async function initiateGoogleAuth() {
+    const userId = getUserId();
+    
+    if (!userId) {
+        showStatus('❌ User ID not found. Please start from Telegram bot.', 'error');
+        return;
+    }
+    
+    toggleSpinner(true);
+    showStatus('🔄 Redirecting to Google...', 'loading');
+    
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/initiate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: parseInt(userId) })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to initiate authentication');
+        }
+        
+        const data = await response.json();
+        
+        // Redirect to Google OAuth
+        window.location.href = data.auth_url;
+        
+    } catch (error) {
+        console.error('Auth error:', error);
+        toggleSpinner(false);
+        showStatus('❌ Failed to connect. Please try again.', 'error');
     }
 }
 
-def initiate_oauth_flow(user_id: int) -> str:
-    """
-    Initiate OAuth flow and return authorization URL
-    """
-    flow = Flow.from_client_config(
-        CLIENT_CONFIG,
-        scopes=SCOPES,
-        redirect_uri=CLIENT_CONFIG['web']['redirect_uris'][0]
-    )
+// Handle OAuth callback
+async function handleOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state'); // This contains user_id
+    const error = urlParams.get('error');
     
-    # Generate authorization URL with state parameter
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true',
-        state=str(user_id),  # Use user_id as state
-        prompt='consent'  # Force consent to get refresh token
-    )
-    
-    return authorization_url
-
-def handle_oauth_callback(code: str, user_id: int) -> dict:
-    """
-    Handle OAuth callback and save tokens
-    """
-    flow = Flow.from_client_config(
-        CLIENT_CONFIG,
-        scopes=SCOPES,
-        redirect_uri=CLIENT_CONFIG['web']['redirect_uris'][0]
-    )
-    
-    # Exchange authorization code for tokens
-    flow.fetch_token(code=code)
-    
-    credentials = flow.credentials
-    
-    # Save tokens to database
-    tokens = {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': credentials.scopes,
-        'expiry': credentials.expiry.isoformat() if credentials.expiry else None
+    if (error) {
+        showStatus(`❌ Authorization cancelled: ${error}`, 'error');
+        return;
     }
     
-    # Get user email
-    from googleapiclient.discovery import build
-    service = build('oauth2', 'v2', credentials=credentials)
-    user_info = service.userinfo().get().execute()
-    tokens['email'] = user_info.get('email')
-    
-    save_user_tokens(user_id, tokens)
-    
-    return {
-        "status": "success",
-        "email": tokens['email']
+    if (!code || !state) {
+        return; // Not a callback URL
     }
+    
+    toggleSpinner(true);
+    showStatus('🔄 Completing authorization...', 'loading');
+    
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/callback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                user_id: parseInt(state)
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to complete authentication');
+        }
+        
+        const data = await response.json();
+        
+        toggleSpinner(false);
+        showStatus(
+            `✅ Successfully connected!\n📧 ${data.email}\n\nYou can now return to Telegram.`,
+            'success'
+        );
+        
+        // Optional: Send message to Telegram bot
+        notifyTelegramBot(state);
+        
+        // Redirect back to telegram after 3 seconds
+        setTimeout(() => {
+            window.location.href = 'https://t.me/YOUR_BOT_USERNAME';
+        }, 3000);
+        
+    } catch (error) {
+        console.error('Callback error:', error);
+        toggleSpinner(false);
+        showStatus('❌ Failed to complete authorization. Please try again.', 'error');
+    }
+}
 
-def get_google_credentials(user_id: int) -> Credentials:
-    """
-    Get Google credentials for user, refresh if needed
-    """
-    tokens = get_user_tokens(user_id)
+// Optional: Notify Telegram bot that auth is complete
+async function notifyTelegramBot(userId) {
+    // This could trigger a welcome message in the bot
+    try {
+        await fetch(`${BACKEND_URL}/api/auth/notify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: parseInt(userId) })
+        });
+    } catch (error) {
+        console.error('Notification error:', error);
+    }
+}
+
+// Check if user is already authenticated
+async function checkAuthStatus() {
+    const userId = getUserId();
     
-    if not tokens:
-        return None
+    if (!userId) {
+        return;
+    }
     
-    creds = Credentials(
-        token=tokens.get('token'),
-        refresh_token=tokens.get('refresh_token'),
-        token_uri=tokens.get('token_uri'),
-        client_id=tokens.get('client_id'),
-        client_secret=tokens.get('client_secret'),
-        scopes=tokens.get('scopes')
-    )
-    
-    # Refresh token if expired
-    if creds.expired and creds.refresh_token:
-        try:
-            creds.refresh(Request())
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/status/${userId}`);
+        const data = await response.json();
+        
+        if (data.authenticated) {
+            showStatus(
+                `✅ Already connected!\n📧 ${data.email}\n\nYou can return to Telegram.`,
+                'success'
+            );
             
-            # Update tokens in database
-            tokens['token'] = creds.token
-            tokens['expiry'] = creds.expiry.isoformat() if creds.expiry else None
-            save_user_tokens(user_id, tokens)
-        except Exception as e:
-            print(f"Token refresh error: {e}")
-            return None
+            // Hide the sign-in button
+            document.getElementById('googleSignIn').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Status check error:', error);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if this is a callback from Google
+    const urlParams = new URLSearchParams(window.location.search);
     
-    return creds
+    if (urlParams.has('code')) {
+        // Handle OAuth callback
+        handleOAuthCallback();
+    } else {
+        // Normal page load
+        checkAuthStatus();
+        
+        // Set up sign-in button
+        const signInButton = document.getElementById('googleSignIn');
+        if (signInButton) {
+            signInButton.addEventListener('click', initiateGoogleAuth);
+        }
+    }
+});
+
+// Handle errors globally
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+    showStatus('❌ An error occurred. Please refresh and try again.', 'error');
+    toggleSpinner(false);
+});
