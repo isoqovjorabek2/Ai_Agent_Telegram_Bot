@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from auth import get_google_credentials, initiate_oauth_flow, handle_oauth_callback
-from calendar import create_calendar_event, get_user_calendars
+from google_calendar import create_calendar_event, get_user_calendars
 from notes import create_keep_note
 from db import get_user_tokens, save_user_tokens, delete_user_tokens, init_db
 
