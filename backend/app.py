@@ -1,21 +1,53 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 import os
 from datetime import datetime
 
-from auth import get_google_credentials, initiate_oauth_flow, handle_oauth_callback
-from google_calendar import create_calendar_event, get_user_calendars
-from notes import create_keep_note
-from db import get_user_tokens, save_user_tokens, delete_user_tokens, init_db
+# Support both running as a package (uvicorn backend.app:app) and as a script (python app.py)
+try:
+    from .auth import (
+        get_google_credentials,
+        initiate_oauth_flow,
+        handle_oauth_callback,
+    )
+    from .google_calendar import create_calendar_event, get_user_calendars
+    from .notes import create_keep_note
+    from .db import (
+        get_user_tokens,
+        save_user_tokens,
+        delete_user_tokens,
+        init_db,
+    )
+except ImportError:  # pragma: no cover - fallback for script execution
+    # Ensure local directory is importable when running as a script
+    import sys as _sys
+    _sys.path.append(os.path.dirname(__file__))
+    from auth import (
+        get_google_credentials,
+        initiate_oauth_flow,
+        handle_oauth_callback,
+    )
+    from google_calendar import create_calendar_event, get_user_calendars
+    from notes import create_keep_note
+    from db import get_user_tokens, save_user_tokens, delete_user_tokens, init_db
 
 app = FastAPI(title="Telegram Bot Backend")
 
-# CORS middleware
+# CORS middleware (configurable via env CORS_ORIGINS="http://localhost:3000,https://yourdomain")
+cors_origins_env = os.getenv("CORS_ORIGINS", "*")
+allow_origins = (
+    [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+    if cors_origins_env != "*"
+    else ["*"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your webapp domain
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +57,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     init_db()
+
+# Serve static webapp under /webapp
+WEBAPP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "webapp"))
+if os.path.isdir(WEBAPP_DIR):
+    app.mount("/webapp", StaticFiles(directory=WEBAPP_DIR, html=True), name="webapp")
 
 # Pydantic models
 class OAuthInitiate(BaseModel):
@@ -60,6 +97,15 @@ async def initiate_auth(data: OAuthInitiate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Convenience GET endpoint to start OAuth via redirect (useful for simple clients)
+@app.get("/auth/google")
+async def auth_google_redirect(user_id: int):
+    try:
+        auth_url = initiate_oauth_flow(user_id)
+        return RedirectResponse(url=auth_url, status_code=302)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/auth/callback")
 async def auth_callback(data: OAuthCallback):
     """Handle OAuth callback"""
@@ -68,6 +114,14 @@ async def auth_callback(data: OAuthCallback):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Serve OAuth callback page at a clean path that can be used in Google Console
+@app.get("/oauth/callback")
+async def oauth_callback_page():
+    callback_file = os.path.join(WEBAPP_DIR, "callback.html")
+    if os.path.isfile(callback_file):
+        return FileResponse(callback_file)
+    return {"status": "missing_callback_page"}
 
 @app.get("/api/auth/status/{user_id}")
 async def auth_status(user_id: int):

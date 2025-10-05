@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OAuth Callback</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, sans-serif; background: #f6f7fb; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .card { background: white; border-radius: 16px; padding: 28px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.08); text-align: center; }
+    .title { font-size: 20px; margin-bottom: 12px; color: #222; }
+    .desc { color: #555; margin-bottom: 16px; }
+    .status { margin-top: 16px; padding: 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .status.loading { display:block; background: #eaf2ff; color: #1d4ed8; }
+    .status.success { display:block; background: #e7f7ef; color: #0a8754; }
+    .status.error { display:block; background: #fdecec; color: #b00020; }
+    .spinner { border: 3px solid #eee; border-top:3px solid #667eea; width:36px; height:36px; border-radius:50%; margin: 14px auto; animation:spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
+    .small { color:#666; font-size: 12px; margin-top:8px; }
+    a.btn { display:inline-block; margin-top:16px; padding:10px 16px; border-radius:10px; background:#667eea; color:white; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">Completing Google sign-in…</div>
+    <div class="desc">Please wait while we connect your account.</div>
+    <div id="spinner" class="spinner"></div>
+    <div id="status" class="status loading">Exchanging authorization code…</div>
+    <div class="small">You can close this page after success.</div>
+  </div>
+
+  <script>
+    const BACKEND_URL = window.location.origin;
+
+    function setStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    (async function run() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const state = params.get('state'); // we use user_id as state
+
+      if (!code || !state) {
+        setStatus('Missing code or state parameters.', 'error');
+        return;
+      }
+
+      try {
+        setStatus('Finalizing sign-in…', 'loading');
+        const res = await fetch(`${BACKEND_URL}/api/auth/callback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, user_id: Number(state) })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        setStatus(`Connected: ${data.email || 'success'}. You can return to Telegram.`, 'success');
+      } catch (e) {
+        console.error(e);
+        setStatus(`Authorization failed: ${e.message || e}`, 'error');
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
-// Backend API URL
-const BACKEND_URL = "http://localhost:8000";
+// Backend API URL (use current origin by default)
+const BACKEND_URL = window.location.origin;
 
 // Get user_id from URL
 function getUserId() {

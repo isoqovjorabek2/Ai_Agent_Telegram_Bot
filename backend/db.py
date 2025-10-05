@@ -4,7 +4,9 @@ import os
 from typing import Dict, Optional
 from contextlib import contextmanager
 
-DB_PATH = os.getenv('DB_PATH', 'telegram_bot.db')
+DEFAULT_DB_FILENAME = 'telegram_bot.db'
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), DEFAULT_DB_FILENAME)
+DB_PATH = os.getenv('DB_PATH', DEFAULT_DB_PATH)
 
 @contextmanager
 def get_db_connection():

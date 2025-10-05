@@ -4,14 +4,14 @@ python-telegram-bot==20.7
 # FastAPI Backend
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
-httpx==0.25.1
+pydantic==2.9.2
+httpx==0.25.2
 
 # Google APIs
 google-auth==2.23.4
 google-auth-oauthlib==1.1.0
-google-auth-httplib2==0.1.1
-google-api-python-client==2.108.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.129.0
 
 # Optional: For unofficial Google Keep access
 # gkeepapi==0.14.2

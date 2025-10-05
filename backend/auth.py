@@ -17,7 +17,12 @@ CLIENT_CONFIG = {
         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris": [os.getenv("REDIRECT_URI", "http://localhost:3000/oauth/callback")]
+        "redirect_uris": [
+            os.getenv(
+                "REDIRECT_URI",
+                f"{os.getenv('BACKEND_URL', 'http://localhost:8000')}/oauth/callback",
+            )
+        ],
     }
 }
 
@@ -34,7 +39,7 @@ def initiate_oauth_flow(user_id: int) -> str:
     # Generate authorization URL with state parameter
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true',
+        include_granted_scopes=True,
         state=str(user_id),  # Use user_id as state
         prompt='consent'  # Force consent to get refresh token
     )
