@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - REDIRECT_URI=${REDIRECT_URI}
+      - DB_PATH=/app/data/telegram_bot.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+  telegram-bot:
+    build: .
+    command: python3 /app/telegram-bot/bot.py
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - BACKEND_URL=${BACKEND_URL}
+      - WEBAPP_URL=${WEBAPP_URL}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  webapp:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./webapp:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
+volumes:
+  data:

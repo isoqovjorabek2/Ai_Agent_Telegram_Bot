@@ -1,5 +1,5 @@
-// Backend API URL
-const BACKEND_URL = "http://localhost:8000";
+// Backend API URL - loaded from config
+const BACKEND_URL = window.APP_CONFIG?.BACKEND_URL || "http://localhost:8000";
 
 // Get user_id from URL
 function getUserId() {
@@ -30,13 +30,33 @@ async function startGoogleLogin() {
     }
 
     try {
-        showStatus("🔄 Redirecting to Google...", "loading");
+        showStatus("🔄 Connecting to backend...", "loading");
 
-        // Redirect to backend for OAuth flow
-        window.location.href = `${BACKEND_URL}/auth/google?user_id=${userId}`;
+        // Call backend API to initiate OAuth flow
+        const response = await fetch(`${BACKEND_URL}/api/auth/initiate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: parseInt(userId) })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to initiate OAuth');
+        }
+
+        const data = await response.json();
+        
+        // Redirect to Google OAuth URL
+        if (data.auth_url) {
+            showStatus("🔄 Redirecting to Google...", "loading");
+            window.location.href = data.auth_url;
+        } else {
+            throw new Error('No auth URL received');
+        }
     } catch (err) {
         console.error(err);
-        showStatus("❌ Failed to start Google login", "error");
+        showStatus("❌ Failed to start Google login: " + err.message, "error");
     }
 }
 

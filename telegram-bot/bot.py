@@ -129,8 +129,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 return
         except Exception as e:
-              logger.error(f"Backend error: {e}")
-              await update.message.reply_text("⚠️ Backend bilan aloqa yo'q / Нет связи с backend")
+            logger.error(f"Backend error: {e}")
+            await update.message.reply_text("⚠️ Backend bilan aloqa yo'q / Нет связи с backend")
     
     # Send typing indicator
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")

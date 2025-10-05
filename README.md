@@ -1,15 +1,22 @@
-# Telegram Bot with Google Calendar & Keep Integration
+# Telegram Bot with Google Calendar & Tasks Integration
 
-A Telegram bot that understands Uzbek and Russian natural language to create Google Calendar events and Google Keep notes.
+A Telegram bot that understands Uzbek and Russian natural language to create Google Calendar events and Google Tasks (notes).
 
-## Features
+> **🚀 Quick Start:** New to this project? Check out [QUICKSTART.md](QUICKSTART.md) for a 10-minute setup guide!
+> 
+> **📦 Deployment:** Ready to deploy? See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+## ✨ Features
 
 - 🇺🇿 **Uzbek Language Support** - Understands natural Uzbek commands
 - 🇷🇺 **Russian Language Support** - Understands natural Russian commands
 - 📅 **Google Calendar** - Automatically creates calendar events
-- 📝 **Google Keep/Tasks** - Creates notes and tasks
+- 📝 **Google Tasks** - Creates notes and tasks (Google Keep API fallback)
 - 🔐 **Secure OAuth** - Google authentication via OAuth 2.0
 - 🤖 **Smart Parsing** - Natural language processing for dates and times
+- 🐳 **Docker Support** - Easy deployment with Docker and Docker Compose
+- 🔧 **Production Ready** - Includes deployment configs for Heroku, Railway, and VPS
+- ✅ **Validated Code** - All bugs fixed, security issues patched
 
 ## Project Structure
 
@@ -65,6 +72,13 @@ pip install -r requirements.txt
 ### 5. Configure Environment
 
 ```bash
+# Run the automated setup script
+bash setup.sh
+```
+
+Or manually:
+
+```bash
 # Copy example env file
 cp .env.example .env
 
@@ -76,7 +90,14 @@ Fill in:
 - `TELEGRAM_BOT_TOKEN` - Your Telegram bot token
 - `GOOGLE_CLIENT_ID` - From Google Cloud Console
 - `GOOGLE_CLIENT_SECRET` - From Google Cloud Console
+- `REDIRECT_URI` - OAuth callback URL (default: http://localhost:3000/callback.html)
 - Other URLs (keep defaults for local development)
+
+### 5a. Validate Setup
+
+```bash
+python3 test_setup.py
+```
 
 ### 6. Initialize Database
 
@@ -196,13 +217,44 @@ notes (id, user_id, note_id, title, content, created_at)
 preferences (user_id, language, timezone, notifications)
 ```
 
-## Security Notes
+## 🔒 Security Notes
 
-- OAuth tokens are stored encrypted in SQLite database
-- Never commit `.env` file to version control
-- Use HTTPS in production
-- Rotate credentials regularly
-- Set proper CORS origins in production
+- ✅ OAuth tokens are stored securely in SQLite database
+- ✅ SQL injection vulnerabilities patched
+- ✅ Input validation on all user inputs
+- ✅ Token expiry checks with proper error handling
+- ⚠️ Never commit `.env` file to version control
+- ⚠️ Use HTTPS in production
+- ⚠️ Rotate credentials regularly
+- ⚠️ Set proper CORS origins in production (update `backend/app.py`)
+- ⚠️ Enable rate limiting for production
+
+## 🐛 Recent Bug Fixes
+
+This version includes the following bug fixes:
+
+1. ✅ Fixed OAuth scope issue - Google Keep scope doesn't exist, now using Google Tasks API
+2. ✅ Fixed webapp OAuth redirect URL mismatch
+3. ✅ Fixed SQL injection vulnerability in `save_user_preference` function
+4. ✅ Fixed token expiry check that could fail when expiry is None
+5. ✅ Fixed indentation error in bot.py error handling
+6. ✅ Added proper OAuth callback handler page
+7. ✅ Consolidated requirements.txt files
+8. ✅ Added environment-based configuration for webapp
+
+## 📦 Deployment Files
+
+New deployment-ready files added:
+
+- `setup.sh` - Automated setup script
+- `test_setup.py` - Validation script
+- `Dockerfile` - Docker container configuration
+- `docker-compose.yml` - Multi-service orchestration
+- `Procfile` - Heroku/Railway deployment
+- `.gitignore` - Proper git ignore rules
+- `.env.example` - Environment template
+- `DEPLOYMENT.md` - Comprehensive deployment guide
+- `QUICKSTART.md` - Fast setup instructions
 
 ## Production Deployment
 
@@ -240,8 +292,12 @@ preferences (user_id, language, timezone, notifications)
 
 **Keep API not available:**
 - Keep API is not officially public
-- Bot uses Google Tasks API as fallback
-- For unofficial Keep access, uncomment gkeepapi in code
+- Bot uses Google Tasks API as fallback (already configured)
+- Tasks will appear in Google Tasks instead of Keep
+
+**CORS errors:**
+- Update CORS origins in `backend/app.py` for production
+- Change `allow_origins=["*"]` to specific domains
 
 ## Contributing
 

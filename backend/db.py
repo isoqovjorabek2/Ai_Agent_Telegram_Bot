@@ -176,9 +176,15 @@ def get_user_notes(user_id: int, limit: int = 10) -> list:
 
 def save_user_preference(user_id: int, key: str, value: str):
     """Save user preference"""
+    # Whitelist allowed preference keys to prevent SQL injection
+    allowed_keys = {'language', 'timezone', 'notifications'}
+    if key not in allowed_keys:
+        raise ValueError(f"Invalid preference key: {key}")
+    
     with get_db_connection() as conn:
         cursor = conn.cursor()
         
+        # Safe to use f-string here since key is validated against whitelist
         cursor.execute(f'''
             INSERT INTO preferences (user_id, {key})
             VALUES (?, ?)

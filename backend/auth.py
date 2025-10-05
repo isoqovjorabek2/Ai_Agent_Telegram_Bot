@@ -6,9 +6,10 @@ from db import get_user_tokens, save_user_tokens
 import json
 
 # OAuth 2.0 scopes
+# Note: Google Keep API is not publicly available, using Tasks API instead
 SCOPES = [
     'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/keep'
+    'https://www.googleapis.com/auth/tasks'
 ]
 
 CLIENT_CONFIG = {
@@ -99,14 +100,16 @@ def get_google_credentials(user_id: int) -> Credentials:
     )
     
     # Refresh token if expired
-    if creds.expired and creds.refresh_token:
+    if creds.refresh_token:
         try:
-            creds.refresh(Request())
-            
-            # Update tokens in database
-            tokens['token'] = creds.token
-            tokens['expiry'] = creds.expiry.isoformat() if creds.expiry else None
-            save_user_tokens(user_id, tokens)
+            # Check if token is expired or about to expire
+            if creds.expired or not creds.valid:
+                creds.refresh(Request())
+                
+                # Update tokens in database
+                tokens['token'] = creds.token
+                tokens['expiry'] = creds.expiry.isoformat() if creds.expiry else None
+                save_user_tokens(user_id, tokens)
         except Exception as e:
             print(f"Token refresh error: {e}")
             return None

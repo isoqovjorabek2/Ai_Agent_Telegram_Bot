@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Complete</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .message {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">⏳</div>
+        <h1>Processing Authorization...</h1>
+        <p class="message">Please wait while we complete your Google account connection.</p>
+        <div class="spinner"></div>
+        <div id="status"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const BACKEND_URL = window.APP_CONFIG?.BACKEND_URL || "http://localhost:8000";
+
+        async function handleCallback() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const state = params.get('state'); // This is the user_id
+            const error = params.get('error');
+
+            if (error) {
+                showError(`Authorization failed: ${error}`);
+                return;
+            }
+
+            if (!code || !state) {
+                showError('Missing authorization code or user ID');
+                return;
+            }
+
+            try {
+                // Send code to backend
+                const response = await fetch(`${BACKEND_URL}/api/auth/callback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        user_id: parseInt(state)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    showSuccess(data.email);
+                } else {
+                    showError(data.detail || 'Authorization failed');
+                }
+            } catch (err) {
+                console.error(err);
+                showError('Failed to complete authorization: ' + err.message);
+            }
+        }
+
+        function showSuccess(email) {
+            document.querySelector('.icon').textContent = '✅';
+            document.querySelector('h1').textContent = 'Authorization Successful!';
+            document.querySelector('.message').innerHTML = `
+                Your Google account has been connected successfully.<br>
+                Email: <strong>${email}</strong><br><br>
+                You can now close this window and return to Telegram.
+            `;
+            document.querySelector('.spinner').style.display = 'none';
+            
+            const status = document.getElementById('status');
+            status.className = 'status success';
+            status.textContent = '✅ You can now use the bot in Telegram!';
+        }
+
+        function showError(message) {
+            document.querySelector('.icon').textContent = '❌';
+            document.querySelector('h1').textContent = 'Authorization Failed';
+            document.querySelector('.message').textContent = message;
+            document.querySelector('.spinner').style.display = 'none';
+            
+            const status = document.getElementById('status');
+            status.className = 'status error';
+            status.innerHTML = `
+                ${message}<br><br>
+                <a href="index.html" class="btn">Try Again</a>
+            `;
+        }
+
+        // Run on page load
+        handleCallback();
+    </script>
+</body>
+</html>
