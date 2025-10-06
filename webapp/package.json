@@ -1,0 +1,16 @@
+{
+  "name": "telegram-bot-webapp",
+  "version": "1.0.0",
+  "description": "Telegram Bot Web Application for Google OAuth",
+  "scripts": {
+    "build": "bash build-env.sh",
+    "start": "python -m http.server 3000"
+  },
+  "keywords": [
+    "telegram",
+    "google-oauth",
+    "webapp"
+  ],
+  "author": "",
+  "license": "MIT"
+}
