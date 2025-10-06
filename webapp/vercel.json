@@ -1,39 +1,30 @@
 {
   "version": 2,
   "name": "telegram-bot-webapp",
-<<<<<<< HEAD
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-=======
   "buildCommand": "bash build-env.sh",
   "outputDirectory": ".",
   "installCommand": "echo 'No install needed'",
   "framework": null,
   "builds": [
     {
->>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "*.html",
       "use": "@vercel/static"
     },
     {
       "src": "*.js",
       "use": "@vercel/static"
-<<<<<<< HEAD
     },
     {
       "src": "*.css",
       "use": "@vercel/static"
-=======
->>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb
     }
   ],
   "routes": [
     {
-<<<<<<< HEAD
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
@@ -46,10 +37,3 @@
     "ENV_BACKEND_URL": "@env_backend_url"
   }
 }
-=======
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
-}
->>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb
