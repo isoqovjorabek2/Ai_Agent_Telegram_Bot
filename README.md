@@ -15,7 +15,8 @@ A Telegram bot that understands Uzbek and Russian natural language to create Goo
 - 🔐 **Secure OAuth** - Google authentication via OAuth 2.0
 - 🤖 **Smart Parsing** - Natural language processing for dates and times
 - 🐳 **Docker Support** - Easy deployment with Docker and Docker Compose
-- 🔧 **Production Ready** - Includes deployment configs for Heroku, Railway, and VPS
+- ☁️ **Vercel Ready** - Serverless functions for environment variables
+- 🔧 **Production Ready** - Includes deployment configs for Heroku, Railway, VPS, and Vercel
 - ✅ **Validated Code** - All bugs fixed, security issues patched
 
 ## Project Structure
@@ -241,6 +242,8 @@ This version includes the following bug fixes:
 6. ✅ Added proper OAuth callback handler page
 7. ✅ Consolidated requirements.txt files
 8. ✅ Added environment-based configuration for webapp
+9. ✅ Implemented Vercel serverless functions for environment variables
+10. ✅ Created comprehensive Vercel deployment guide
 
 ## 📦 Deployment Files
 
@@ -255,6 +258,9 @@ New deployment-ready files added:
 - `.env.example` - Environment template
 - `DEPLOYMENT.md` - Comprehensive deployment guide
 - `QUICKSTART.md` - Fast setup instructions
+- `webapp/README_VERCEL.md` - Vercel deployment guide
+- `webapp/api/env.js` - Serverless function for environment variables
+- `webapp/vercel.json` - Vercel configuration
 
 ## Production Deployment
 
@@ -264,10 +270,13 @@ New deployment-ready files added:
 3. Enable HTTPS
 4. Set proper CORS origins
 
-### Webapp (Vercel, Netlify, GitHub Pages)
-1. Deploy static files
-2. Update `REDIRECT_URI` in Google Cloud Console
-3. Update `WEBAPP_URL` in environment
+### Webapp (Vercel - Recommended)
+1. Deploy to Vercel: `cd webapp && vercel --prod`
+2. Set environment variable: `ENV_BACKEND_URL` in Vercel dashboard
+3. Update `REDIRECT_URI` in Google Cloud Console
+4. Uses serverless function at `/api/env.js` for dynamic config
+
+See [webapp/README_VERCEL.md](webapp/README_VERCEL.md) for detailed guide.
 
 ### Bot
 1. Run on VPS or cloud server

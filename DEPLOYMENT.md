@@ -255,24 +255,43 @@ sudo certbot --nginx -d your-domain.com
 
 ---
 
-## Webapp Deployment (Vercel/Netlify)
+## Webapp Deployment (Vercel - Recommended)
 
-### Vercel
+### Vercel with Serverless Functions
+
+The webapp now uses Vercel serverless functions for environment variables!
+
+**Quick Deploy:**
 
 1. **Install Vercel CLI**
 ```bash
 npm install -g vercel
 ```
 
-2. **Deploy**
+2. **Deploy from webapp directory**
 ```bash
 cd webapp
 vercel
 ```
 
-3. **Set environment variables**
-   - Go to Vercel dashboard
-   - Add environment variable: `ENV_BACKEND_URL=https://your-backend.com`
+3. **Set environment variable**
+```bash
+vercel env add ENV_BACKEND_URL
+# Enter your backend URL: https://your-backend.herokuapp.com
+```
+
+4. **Deploy to production**
+```bash
+vercel --prod
+```
+
+**Features:**
+- ✅ Serverless function at `/api/env.js` injects environment variables
+- ✅ No hardcoded URLs in frontend
+- ✅ Easy to update via Vercel dashboard
+- ✅ Automatic HTTPS and custom domains
+
+**For detailed Vercel guide, see:** [webapp/README_VERCEL.md](webapp/README_VERCEL.md)
 
 ### Netlify
 

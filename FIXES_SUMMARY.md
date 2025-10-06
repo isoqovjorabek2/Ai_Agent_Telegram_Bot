@@ -133,6 +133,40 @@ if creds.refresh_token:
 
 ---
 
+## ☁️ Vercel Serverless Integration (LATEST)
+
+### Serverless Function for Environment Variables
+**New Files:** `webapp/api/env.js`, `webapp/vercel.json`, `webapp/package.json`
+
+Now the webapp uses Vercel serverless functions instead of hardcoded URLs:
+
+```javascript
+// webapp/api/env.js - Serverless function
+export default function handler(req, res) {
+  res.setHeader("Content-Type", "application/javascript");
+  const backendUrl = process.env.ENV_BACKEND_URL || "http://localhost:8000";
+  res.send(`window.ENV_BACKEND_URL = "${backendUrl}";`);
+}
+```
+
+**Benefits:**
+- ✅ No hardcoded URLs in frontend code
+- ✅ Environment variables managed in Vercel dashboard
+- ✅ Easy to update without redeploying code
+- ✅ Secure configuration per environment (dev/staging/prod)
+- ✅ Automatic HTTPS and CDN via Vercel
+
+**Deployment:**
+```bash
+cd webapp
+vercel --prod
+vercel env add ENV_BACKEND_URL
+```
+
+See comprehensive guide: `webapp/README_VERCEL.md`
+
+---
+
 ## ✨ Major Improvements
 
 ### 1. OAuth Callback Handler
@@ -214,12 +248,12 @@ All tests passing:
 
 ## 📊 Statistics
 
-**Files Modified:** 8
-**Files Added:** 14
-**Lines Changed:** ~500+
+**Files Modified:** 11
+**Files Added:** 18
+**Lines Changed:** ~700+
 **Bugs Fixed:** 5 critical/high priority
 **Security Issues Patched:** 1 SQL injection
-**New Features:** 4 major improvements
+**New Features:** 5 major improvements (including Vercel serverless)
 
 ---
 
