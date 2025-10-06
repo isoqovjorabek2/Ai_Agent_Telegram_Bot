@@ -1,0 +1,5 @@
+requirements.txt
+README.md
+node_modules/
+.env
+.env.local

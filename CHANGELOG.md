@@ -36,6 +36,22 @@ All notable changes, bug fixes, and improvements to this project.
 - **Fix**: Fixed indentation to 4 spaces
 - **File**: `telegram-bot/bot.py` lines 131-133
 
+### ☁️ Vercel Serverless Integration (NEW)
+
+#### Serverless Function for Environment Variables
+- Created `/api/env.js` serverless function
+- Dynamically injects `ENV_BACKEND_URL` from Vercel environment
+- No hardcoded URLs in frontend
+- Secure configuration via Vercel dashboard
+- **Files**: `webapp/api/env.js`, `webapp/vercel.json`
+
+#### Vercel Deployment Configuration
+- Complete `vercel.json` configuration
+- Package.json for Vercel project metadata
+- .vercelignore for deployment optimization
+- Comprehensive Vercel deployment guide
+- **Files**: `webapp/vercel.json`, `webapp/package.json`, `webapp/README_VERCEL.md`
+
 ### ✨ New Features
 
 #### 1. OAuth Callback Handler Page
