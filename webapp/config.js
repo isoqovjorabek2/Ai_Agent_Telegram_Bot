@@ -1,10 +1,20 @@
 // Configuration for the webapp
-// Update these URLs for production deployment
+// This loads environment variables from env.js (generated at build time)
 
-// Default to environment variables if available, otherwise use localhost
-const BACKEND_URL = window.ENV_BACKEND_URL || "http://localhost:8000";
+// Load backend URL from environment or use localhost as fallback
+const BACKEND_URL = (() => {
+    // First try window.ENV_BACKEND_URL (from env.js)
+    if (window.ENV_BACKEND_URL && window.ENV_BACKEND_URL !== "PLACEHOLDER_BACKEND_URL") {
+        return window.ENV_BACKEND_URL;
+    }
+    
+    // Fallback to localhost for development
+    return "http://localhost:8000";
+})();
 
 // Export configuration
 window.APP_CONFIG = {
     BACKEND_URL: BACKEND_URL
 };
+
+console.log("🔧 App Config:", window.APP_CONFIG);

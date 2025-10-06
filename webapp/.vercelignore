@@ -1,5 +1,13 @@
 requirements.txt
+<<<<<<< HEAD
 README.md
 node_modules/
 .env
 .env.local
+=======
+__pycache__
+*.pyc
+*.md
+.env
+.env.local
+>>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb

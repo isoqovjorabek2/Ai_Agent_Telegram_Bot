@@ -1,5 +1,6 @@
 {
   "name": "telegram-bot-webapp",
+<<<<<<< HEAD
   "version": "1.1.0",
   "description": "Webapp for Telegram Bot OAuth flow",
   "private": true,
@@ -16,3 +17,19 @@
   "author": "",
   "license": "MIT"
 }
+=======
+  "version": "1.0.0",
+  "description": "Telegram Bot Web Application for Google OAuth",
+  "scripts": {
+    "build": "bash build-env.sh",
+    "start": "python -m http.server 3000"
+  },
+  "keywords": [
+    "telegram",
+    "google-oauth",
+    "webapp"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+>>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb
