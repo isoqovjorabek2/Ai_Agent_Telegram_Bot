@@ -1,35 +1,22 @@
 {
   "name": "telegram-bot-webapp",
-<<<<<<< HEAD
   "version": "1.1.0",
-  "description": "Webapp for Telegram Bot OAuth flow",
+  "description": "Telegram Bot Web Application for Google OAuth flow",
   "private": true,
   "scripts": {
     "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000",
+    "build": "bash build-env.sh",
     "vercel": "vercel",
     "vercel-prod": "vercel --prod"
   },
   "keywords": [
     "telegram",
     "oauth",
-    "google-calendar"
-  ],
-  "author": "",
-  "license": "MIT"
-}
-=======
-  "version": "1.0.0",
-  "description": "Telegram Bot Web Application for Google OAuth",
-  "scripts": {
-    "build": "bash build-env.sh",
-    "start": "python -m http.server 3000"
-  },
-  "keywords": [
-    "telegram",
     "google-oauth",
+    "google-calendar",
     "webapp"
   ],
   "author": "",
   "license": "MIT"
 }
->>>>>>> origin/cursor/deploy-and-enhance-web-application-b6fb
