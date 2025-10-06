@@ -3,8 +3,8 @@ python-telegram-bot==20.7
 
 # FastAPI Backend
 fastapi==0.104.1
+pydantic>=2.5.3,<3.0.0
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
 httpx==0.25.2
 
 # Google APIs
