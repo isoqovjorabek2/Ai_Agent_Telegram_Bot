@@ -11,7 +11,7 @@ from handlers import parse_uzbek_russian_message
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
+BACKEND_URL = os.getenv('ENV_BACKEND_URL', 'http://localhost:8000')
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 WEBAPP_URL = os.getenv('WEBAPP_URL', 'http://localhost:3000')
 
