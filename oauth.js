@@ -1,5 +1,5 @@
 // Backend API URL
-const BACKEND_URL = "http://localhost:8000";
+const BACKEND_URL = "https://ai-agent-service-uz-lhhv.onrender.com";
 
 // Get user_id from URL
 function getUserId() {
@@ -33,7 +33,7 @@ async function startGoogleLogin() {
         showStatus("🔄 Redirecting to Google...", "loading");
 
         // Redirect to backend for OAuth flow
-        window.location.href = `${BACKEND_URL}/auth/google?user_id=${userId}`;
+        window.location.href = `${BACKEND_URL}/api/auth/initiate?user_id=${userId}`;
     } catch (err) {
         console.error(err);
         showStatus("❌ Failed to start Google login", "error");
