@@ -2,7 +2,7 @@ import os
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
-from backend import app
+
 from db import get_user_tokens, save_user_tokens
 import json
 
@@ -53,16 +53,7 @@ def handle_oauth_callback(code: str, user_id: int) -> dict:
         redirect_uri=CLIENT_CONFIG['web']['redirect_uris'][0]
     )
     
-@app.get("/oauth/callback")
-async def oauth_callback(request: Request):
-    code = request.query_params.get("code")
-    state = request.query_params.get("state")  # this is user_id
-    
-    if not code or not state:
-        return {"status": "error", "message": "Missing code or state"}
-    
-    result = handle_oauth_callback(code, int(state))
-    return result
+
     # Exchange authorization code for tokens
     flow.fetch_token(code=code)
     
