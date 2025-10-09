@@ -12,7 +12,7 @@ export default function handler(req, res) {
   res.setHeader("Content-Type", "application/javascript");
   
   // Default to localhost for development
-  const backendUrl = process.env.ENV_BACKEND_URL || "http://localhost:8000";
+  const backendUrl = process.env.ENV_BACKEND_URL;
   
   // Return JavaScript that sets window variables
   res.send(`
