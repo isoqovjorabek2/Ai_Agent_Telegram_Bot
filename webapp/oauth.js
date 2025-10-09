@@ -1,5 +1,5 @@
 // Backend API URL - loaded from config
-const BACKEND_URL = window.APP_CONFIG?.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = window.APP_CONFIG.BACKEND_URL;
 
 // Get user_id from URL
 function getUserId() {
