@@ -7,7 +7,7 @@ echo "Generating env.js with environment variables..."
 cat > env.js << EOF
 // This file is auto-generated during build
 // Environment variables are injected here
-window.ENV_BACKEND_URL = "${BACKEND_URL}";
+window.ENV_BACKEND_URL = "${ENV_BACKEND_URL}";
 EOF
 
 echo "✅ env.js generated successfully"

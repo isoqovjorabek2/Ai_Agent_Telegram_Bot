@@ -74,7 +74,7 @@ async def auth_status(user_id: int):
     """Check if user is authenticated"""
     tokens = get_user_tokens(user_id)
     
-    if tokens and 'access_token' in tokens:
+    if tokens and 'token' in tokens:
         return {
             "authenticated": True,
             "email": tokens.get('email', 'N/A')
