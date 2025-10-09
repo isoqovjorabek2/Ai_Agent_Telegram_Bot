@@ -13,8 +13,8 @@ google-auth-oauthlib==1.1.0
 google-auth-httplib2==0.1.1
 google-api-python-client==2.108.0
 
-# Optional: For unofficial Google Keep access
-# gkeepapi==0.14.2
-
 # Utilities
 python-dotenv==1.0.0
+
+# PostgreSQL
+psycopg2-binary==2.9.9
