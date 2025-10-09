@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "telegram-bot-webapp",
+ 
   "buildCommand": "bash build-env.sh",
   "outputDirectory": ".",
   "installCommand": "echo 'No install needed'",
@@ -32,8 +32,5 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "env": {
-    "ENV_BACKEND_URL": "@env_backend_url"
-  }
+  ]
 }
