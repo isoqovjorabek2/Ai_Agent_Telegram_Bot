@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -66,6 +67,61 @@ async def auth_callback(data: OAuthCallback):
     try:
         result = handle_oauth_callback(data.code, data.user_id)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/oauth/callback")
+async def oauth_callback(code: str, state: str):
+    """Handle OAuth callback from Google (GET request with query params)"""
+    try:
+        user_id = int(state)  # state contains the user_id
+        result = handle_oauth_callback(code, user_id)
+        
+        # Return a simple HTML response
+        return HTMLResponse(content=f"""
+        <html>
+            <head>
+                <title>Authentication Successful</title>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                        background-color: #f0f0f0;
+                    }}
+                    .container {{
+                        text-align: center;
+                        background: white;
+                        padding: 40px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }}
+                    .success {{
+                        color: #4CAF50;
+                        font-size: 24px;
+                        margin-bottom: 20px;
+                    }}
+                    .email {{
+                        color: #666;
+                        margin-bottom: 20px;
+                    }}
+                    .message {{
+                        color: #333;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="success">✓ Authentication Successful!</div>
+                    <div class="email">Authenticated as: {result['email']}</div>
+                    <div class="message">You can now close this window and return to Telegram.</div>
+                </div>
+            </body>
+        </html>
+        """)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
