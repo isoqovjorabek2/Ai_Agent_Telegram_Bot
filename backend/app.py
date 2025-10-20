@@ -1,10 +1,9 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional
-import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from auth import get_google_credentials, initiate_oauth_flow, handle_oauth_callback
 from google_calendar import create_calendar_event, get_user_calendars
@@ -13,21 +12,21 @@ from db import get_user_tokens, save_user_tokens, delete_user_tokens, init_db
 
 app = FastAPI(title="Telegram Bot Backend")
 
-# CORS middleware
+# ---------------- CORS Middleware ----------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your webapp domain
+    allow_origins=["*"],  # In production, restrict to your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize database on startup
+# ---------------- Startup ----------------
 @app.on_event("startup")
 async def startup_event():
     init_db()
 
-# Pydantic models
+# ---------------- Models ----------------
 class OAuthInitiate(BaseModel):
     user_id: int
 
@@ -46,12 +45,12 @@ class NoteCreate(BaseModel):
     title: str
     content: Optional[str] = ""
 
-# Health check
+# ---------------- Root ----------------
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "telegram-bot-backend"}
 
-# Auth endpoints
+# ---------------- AUTH ----------------
 @app.post("/api/auth/initiate")
 async def initiate_auth(data: OAuthInitiate):
     """Initiate OAuth flow"""
@@ -61,23 +60,25 @@ async def initiate_auth(data: OAuthInitiate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/api/auth/callback")
 async def auth_callback(data: OAuthCallback):
-    """Handle OAuth callback"""
+    """Handle OAuth callback (POST)"""
     try:
         result = handle_oauth_callback(data.code, data.user_id)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/oauth/callback")
 async def oauth_callback(code: str, state: str):
-    """Handle OAuth callback from Google (GET request with query params)"""
+    """Handle OAuth callback (GET)"""
     try:
-        user_id = int(state)  # state contains the user_id
+        user_id = int(state)
         result = handle_oauth_callback(code, user_id)
-        
-        # Return a simple HTML response
+
+        # Pretty success HTML
         return HTMLResponse(content=f"""
         <html>
             <head>
@@ -125,18 +126,33 @@ async def oauth_callback(code: str, state: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/auth/status/{user_id}")
 async def auth_status(user_id: int):
     """Check if user is authenticated"""
     tokens = get_user_tokens(user_id)
-    
-    if tokens and 'access_token' in tokens:
-        return {
-            "authenticated": True,
-            "email": tokens.get('email', 'N/A')
-        }
-    
-    return {"authenticated": False}
+
+    if not tokens:
+        return {"authenticated": False}
+
+    # ✅ FIX: check for either 'token' or 'access_token'
+    token_value = tokens.get('token') or tokens.get('access_token')
+    expiry_str = tokens.get('expiry')
+
+    if not token_value:
+        return {"authenticated": False}
+
+    # Optional: Check expiry time if stored
+    if expiry_str:
+        try:
+            expiry = datetime.fromisoformat(expiry_str)
+            if expiry < datetime.now(timezone.utc):
+                return {"authenticated": False, "expired": True}
+        except Exception:
+            pass
+
+    return {"authenticated": True, "email": tokens.get('email', 'N/A')}
+
 
 @app.delete("/api/auth/revoke/{user_id}")
 async def revoke_auth(user_id: int):
@@ -147,27 +163,24 @@ async def revoke_auth(user_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Calendar endpoints
+# ---------------- CALENDAR ----------------
 @app.post("/api/calendar/create")
 async def create_event(data: CalendarEventCreate):
-    """Create calendar event"""
+    """Create a Google Calendar event"""
     try:
-        # Get user credentials
         creds = get_google_credentials(data.user_id)
         if not creds:
             raise HTTPException(status_code=401, detail="User not authenticated")
-        
-        # Parse datetime
+
         event_datetime = datetime.fromisoformat(data.datetime)
-        
-        # Create event
+
         event = create_calendar_event(
             creds,
             title=data.title,
             start_time=event_datetime,
             description=data.description
         )
-        
+
         return {
             "status": "created",
             "event_id": event.get('id'),
@@ -176,6 +189,7 @@ async def create_event(data: CalendarEventCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/calendar/list/{user_id}")
 async def list_calendars(user_id: int):
     """List user's calendars"""
@@ -183,13 +197,13 @@ async def list_calendars(user_id: int):
         creds = get_google_credentials(user_id)
         if not creds:
             raise HTTPException(status_code=401, detail="User not authenticated")
-        
+
         calendars = get_user_calendars(creds)
         return {"calendars": calendars}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Notes endpoints
+# ---------------- NOTES ----------------
 @app.post("/api/notes/create")
 async def create_note(data: NoteCreate):
     """Create Google Keep note"""
@@ -197,13 +211,13 @@ async def create_note(data: NoteCreate):
         creds = get_google_credentials(data.user_id)
         if not creds:
             raise HTTPException(status_code=401, detail="User not authenticated")
-        
+
         note = create_keep_note(
             creds,
             title=data.title,
             content=data.content
         )
-        
+
         return {
             "status": "created",
             "note_id": note.get('name')
@@ -211,6 +225,8 @@ async def create_note(data: NoteCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ---------------- Run ----------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

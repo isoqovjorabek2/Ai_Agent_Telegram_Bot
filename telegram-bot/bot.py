@@ -200,23 +200,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
 def main():
-    """Start the bot"""
     if not BOT_TOKEN:
         raise ValueError("TELEGRAM_BOT_TOKEN not set!")
-    
+
     application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Command handlers
+
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("auth", auth_command))
     application.add_handler(CommandHandler("status", status_command))
-    
-    # Message handler
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
+
     logger.info("Bot started!")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
+
 
 if __name__ == '__main__':
     main()
