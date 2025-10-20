@@ -7,8 +7,8 @@ Deploy the webapp to Vercel with serverless functions for environment variables.
 ### Option 1: One-Click Deploy (Easiest)
 
 1. Click this button:
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=YOUR_REPO_URL&project-name=telegram-bot-webapp&env=ENV_BACKEND_URL)
-
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=YOUR_REPO_URL&project-name=telegram-bot-webapp&=ENV_BACKEND_URL)
+env
 2. Set environment variable:
    - `ENV_BACKEND_URL` = Your backend URL (e.g., `https://your-backend.herokuapp.com`)
 
