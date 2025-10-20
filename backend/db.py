@@ -1,7 +1,7 @@
 import os
 import json
-import psycopg2
-import psycopg2.extras
+import psycopg
+import psycopg.extras
 from typing import Dict, Optional
 from contextlib import contextmanager
 
@@ -12,7 +12,7 @@ DB_URL = os.getenv('DB_PATH')
 @contextmanager
 def get_db_connection():
     """Context manager for PostgreSQL connections"""
-    conn = psycopg2.connect(DB_URL, sslmode="require")
+    conn = psycopg.connect(DB_URL, sslmode="require")
     try:
         yield conn
         conn.commit()
@@ -96,7 +96,7 @@ def save_user_tokens(user_id: int, tokens: Dict):
 def get_user_tokens(user_id: int) -> Optional[Dict]:
     """Get user OAuth tokens"""
     with get_db_connection() as conn:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg.extras.DictCursor)
         cursor.execute('SELECT tokens FROM users WHERE user_id = %s', (user_id,))
         row = cursor.fetchone()
         if row and row['tokens']:
@@ -122,7 +122,7 @@ def save_event(user_id: int, event_id: str, title: str, start_time: str):
 
 def get_user_events(user_id: int, limit: int = 10) -> list:
     with get_db_connection() as conn:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg.extras.DictCursor)
         cursor.execute('''
             SELECT * FROM events
             WHERE user_id = %s
@@ -141,7 +141,7 @@ def save_note(user_id: int, note_id: str, title: str, content: str):
 
 def get_user_notes(user_id: int, limit: int = 10) -> list:
     with get_db_connection() as conn:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg.extras.DictCursor)
         cursor.execute('''
             SELECT * FROM notes
             WHERE user_id = %s
@@ -165,14 +165,14 @@ def save_user_preference(user_id: int, key: str, value: str):
 
 def get_user_preferences(user_id: int) -> Optional[Dict]:
     with get_db_connection() as conn:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg.extras.DictCursor)
         cursor.execute('SELECT * FROM preferences WHERE user_id = %s', (user_id,))
         row = cursor.fetchone()
         return dict(row) if row else None
 
 def get_all_users() -> list:
     with get_db_connection() as conn:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor = conn.cursor(cursor_factory=psycopg.extras.DictCursor)
         cursor.execute('SELECT user_id, email FROM users')
         return [dict(row) for row in cursor.fetchall()]
 
