@@ -6,11 +6,12 @@ from db import get_user_tokens, save_user_tokens
 
 # OAuth 2.0 scopes
 SCOPES = [
-    'openid',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/tasks'
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/tasks",
+    "https://www.googleapis.com/auth/keep"
 ]
 
 CLIENT_CONFIG = {
