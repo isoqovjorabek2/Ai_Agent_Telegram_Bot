@@ -46,9 +46,20 @@ class NoteCreate(BaseModel):
     content: Optional[str] = ""
 
 # ---------------- Root ----------------
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    return {"status": "ok", "service": "telegram-bot-backend"}
+    return """
+    <html>
+        <head>
+            <meta name="google-site-verification" content="JEAZTHvE1abe8LXtoHbKeMLARs6gPeAYm8niX62C80s" />
+            <title>AI Agent Service</title>
+        </head>
+        <body>
+            <h1>AI Agent Backend is Running ✅</h1>
+            <p>This is the backend for Telegram bot and Google integrations.</p>
+        </body>
+    </html>
+    """
 
 # ---------------- AUTH ----------------
 @app.post("/api/auth/initiate")
