@@ -225,6 +225,62 @@ async def create_note(data: NoteCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ---------------- INFO PAGES ----------------
+@app.get("/privacy-policy", response_class=HTMLResponse)
+async def privacy_policy():
+    return """
+    <html>
+        <head>
+            <title>Privacy Policy</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+                h1 { color: #2b7de9; }
+            </style>
+        </head>
+        <body>
+            <h1>Privacy Policy</h1>
+            <p>
+                This application connects your Google account to provide integrations with Google Calendar and Google Keep.
+                We store only your OAuth tokens and basic user ID securely in our database.
+            </p>
+            <p>
+                No personal data (emails, events, notes) is shared with any third party.
+                You can revoke access at any time using the <code>/auth revoke</code> command in Telegram or through Google Account permissions.
+            </p>
+            <p>
+                If you have questions, contact us at <a href="mailto:support@newuu.uz">support@newuu.uz</a>.
+            </p>
+        </body>
+    </html>
+    """
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_of_service():
+    return """
+    <html>
+        <head>
+            <title>Terms of Service</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+                h1 { color: #2b7de9; }
+            </style>
+        </head>
+        <body>
+            <h1>Terms of Service</h1>
+            <p>
+                By using this application, you agree to link your Google account for the purpose of creating and managing calendar events and notes.
+                You may disconnect your Google account at any time.
+            </p>
+            <p>
+                We are not responsible for any loss of data due to revoked permissions or Google API changes.
+            </p>
+            <p>
+                Use of this service implies consent to our <a href="/privacy-policy">Privacy Policy</a>.
+            </p>
+        </body>
+    </html>
+    """
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
