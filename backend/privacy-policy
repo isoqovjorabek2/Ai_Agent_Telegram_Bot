@@ -1,0 +1,3 @@
+We store only Google OAuth tokens and user IDs securely in our database to provide integration with Google Calendar and Keep.
+We do not share this information with third parties.
+Users can delete their data anytime by using the /auth revoke command in Telegram.
